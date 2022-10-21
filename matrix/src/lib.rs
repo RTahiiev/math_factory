@@ -1,5 +1,4 @@
-use std::fmt::Debug;
-use std::ops::Mul;
+use std::{ops::Mul, result, vec};
 
 struct Matrix {
     n: usize,
@@ -22,6 +21,43 @@ impl Matrix {
             m: mat[0].len(),
             data: mat,
         }
+    }
+
+    fn gauss(self) -> Vec<f32> {
+        if self.n + 1 != self.m {
+            panic!("Its a problem!")
+        }
+
+        let mut matrix: Vec<Vec<f32>> = vec![vec![0.0_f32; self.m]; self.n];
+        for (i, vector) in self.data.iter().enumerate() {
+            for (j, v) in vector.iter().enumerate() {
+                matrix[i][j] = *v as f32;
+            }
+        }
+        for i in 0..self.n {
+            let mut best: usize = i;
+            for j in 0..self.n {
+                if matrix[j][i].abs() > matrix[best][i].abs() {
+                    best = j;
+                }
+            }
+            matrix.swap(best, i);
+            for j in (0..self.m).rev() {
+                matrix[i][j] = (matrix[i][j] / matrix[i][i]).floor();
+            }
+            for j in 0..self.n {
+                if j != i {
+                    for k in (0..self.m).rev() {
+                        matrix[j][k] -= matrix[i][k] * matrix[j][i];
+                    }
+                }
+            }
+        }
+        let mut result: Vec<f32> = vec![0.0_f32; self.n];
+        for i in 0..self.n {
+            result[i] = matrix[i][self.n];
+        }
+        result
     }
 }
 
@@ -69,5 +105,12 @@ mod tests {
             vec![vec![4, 8, 12], vec![5, 10, 15], vec![6, 12, 18]],
             res.data
         );
+    }
+
+    #[test]
+    fn matrix_gauss() {
+        let m1 = Matrix::from(vec![vec![1, 1, 3], vec![3, -2, 4]]);
+        let res = m1.gauss();
+        assert_eq!(vec![2.0, 1.0], res);
     }
 }
