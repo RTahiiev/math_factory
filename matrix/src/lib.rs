@@ -83,6 +83,26 @@ impl Mul for Matrix {
     }
 }
 
+fn binpow(mut base: i32, mut exponent: i32) -> f64 {
+    let mut result: f64 = 1.0;
+    let mut flag = false;
+    if exponent < 0 {
+        flag = true;
+    }
+    exponent = exponent.abs();
+    while exponent != 0 {
+        if exponent & 1 == 1 {
+            result = result * base as f64;
+        }
+        base *= base;
+        exponent >>= 1;
+    }
+    if flag {
+        return 1.0 / result;
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -112,5 +132,15 @@ mod tests {
         let m1 = Matrix::from(vec![vec![1, 1, 3], vec![3, -2, 4]]);
         let res = m1.gauss();
         assert_eq!(vec![2.0, 1.0], res);
+    }
+
+    #[test]
+    fn binpow_test() {
+        let answer_1 = binpow(2, 4);
+        let answer_2 = binpow(3, 3);
+        let answer_3 = binpow(4, -2);
+        assert_eq!(16.0, answer_1);
+        assert_eq!(27.0, answer_2);
+        assert_eq!(1.0 / 16.0, answer_3);
     }
 }
